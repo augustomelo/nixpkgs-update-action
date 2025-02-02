@@ -1,4 +1,4 @@
-name: "Updat nixpkg"
+name: "Update nixpkg"
 on:
   workflow_dispatch:
     inputs:
