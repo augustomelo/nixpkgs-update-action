@@ -19,7 +19,10 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      with:
+        repository: nix-community/nixpkgs-update
+
     - uses: cachix/install-nix-action@v18
     - run: nix build
     - run: ls -l
