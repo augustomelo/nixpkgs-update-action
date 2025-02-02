@@ -48,6 +48,7 @@ jobs:
         path: nixpkgs
 
     - id: branch-name
+      shell: bash
       run: |
          echo "sanitize-name=$( echo ${{inputs.package}}-${{inputs.new-version}} | tr " |.|/" "-")" >> $GITHUB_OUTPUT
 
