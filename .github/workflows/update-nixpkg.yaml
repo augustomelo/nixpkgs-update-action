@@ -39,7 +39,8 @@ jobs:
 
     - name: Build nixpkgs-update
       run: |
-        cd ${{ github.workspace }}/nixpkgs-update && \
+        set -euo pipefail
+        cd ${{ github.workspace }}/nixpkgs-update
         nix build --accept-flake-config
 
     - uses: actions/checkout@v4
@@ -54,16 +55,6 @@ jobs:
       run: |
          echo "sanitize-name=$( echo ${{inputs.package}}-${{inputs.new-version}} | tr " |.|/" "-")" >> $GITHUB_OUTPUT
 
-    - name: Clone fork, sync with upstream, create branch and switch to it
-      shell: bash
-      run: |
-        cd ${{ github.workspace }}/nixpkgs && \
-        git remote add upstream https://github.com/NixOS/nixpkgs.git && \
-        git fetch upstream master && \
-        git merge upstream/master && \
-        git branch "${{ steps.branch-name.outputs.sanitize-name }}" && \
-        git switch "${{ steps.branch-name.outputs.sanitize-name }}"
-
     - name: Set author name and email
       shell: bash
       run: |
@@ -73,11 +64,12 @@ jobs:
     - name: "Create PR to update: \"${{ inputs.package }}: ${{ inputs.current-version }} -> ${{ inputs.new-version }}\""
       shell: bash
       run: |
-        cd ${{ github.workspace }}/nixpkgs && \
+        set -euo pipefail
+        cd ${{ github.workspace }}/nixpkgs
+        git remote add upstream https://github.com/NixOS/nixpkgs.git
+        git fetch upstream
+        git merge upstream/master
+        git branch "${{ steps.branch-name.outputs.sanitize-name }}"
+        git switch "${{ steps.branch-name.outputs.sanitize-name }}"
         ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
-
-    - name: Push changes
-      shell: bash 
-      run: |
-        cd ${{ github.workspace }}/nixpkgs && \
         git push origin "${{ steps.branch-name.outputs.sanitize-name }}"
