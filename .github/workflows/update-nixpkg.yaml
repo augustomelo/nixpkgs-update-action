@@ -47,6 +47,7 @@ jobs:
         repository: ${{ github.repository_owner }}/nixpkgs
         fetch-depth: 0
         path: nixpkgs
+        token: ${{ secrets.GH_TOKEN }}
 
     - id: branch-name
       shell: bash
@@ -71,7 +72,7 @@ jobs:
 
     - name: "Create PR to update: \"${{ inputs.package }}: ${{ inputs.current-version }} -> ${{ inputs.new-version }}\""
       env: 
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN}}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       shell: bash
       run: |
         cd ${{ github.workspace }}/nixpkgs && \
