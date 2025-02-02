@@ -71,7 +71,10 @@ jobs:
     - name: "Create PR to update: \"${{ inputs.package }}: ${{ inputs.current-version }} -> ${{ inputs.new-version }}\""
       env: 
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN}}
-      run: ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
+      shell: bash
+      run: |
+        cd ${{ github.workspace }}/nixpkgs && \
+        ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
 
     - name: Push changes
       shell: bash 
