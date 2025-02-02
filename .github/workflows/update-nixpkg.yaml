@@ -47,6 +47,10 @@ jobs:
         repository: ${{ github.repository_owner }}/nixpkgs
         path: nixpkgs
 
+    - id: branch-name
+      run: |
+         echo "sanitize-name=$( echo ${{inputs.package}}-${{inputs.new-version}} | tr " |.|/" "-")" >> $GITHUB_OUTPUT
+
     - name: Clone fork, sync with upstream, create branch and switch to it
       shell: bash
       run: |
@@ -54,8 +58,8 @@ jobs:
         git remote add upstream https://github.com/NixOS/nixpkgs.git && \
         git fetch upstream && \
         git merge upstream/master && \
-        git branch --set-upstream-to=upstream ""${${{inputs.package}}${{inputs.new-version}}//+([^[:alnum:]])/-}"" && \
-        git switch ""${${{inputs.package}}${{inputs.new-version}}//+([^[:alnum:]])/-}""
+        git branch --set-upstream-to=upstream "${{ steps.branch-name.outputs.sanitize-name }}" && \
+        git switch "${{ steps.branch-name.outputs.sanitize-name }}"
 
     - name: Set author name and email
       shell: bash
@@ -67,3 +71,5 @@ jobs:
       env: 
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN}}
       run: ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
+
+    - run: git push origin "${{ steps.branch-name.outputs.sanitize-name }}"
