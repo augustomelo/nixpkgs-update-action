@@ -57,9 +57,9 @@ jobs:
       run: |
         cd ${{ github.workspace }}/nixpkgs && \
         git remote add upstream https://github.com/NixOS/nixpkgs.git && \
-        git fetch upstream && \
+        git fetch upstream master && \
         git merge upstream/master && \
-        git branch --set-upstream-to=upstream "${{ steps.branch-name.outputs.sanitize-name }}" && \
+        git branch "${{ steps.branch-name.outputs.sanitize-name }}" && \
         git switch "${{ steps.branch-name.outputs.sanitize-name }}"
 
     - name: Set author name and email
