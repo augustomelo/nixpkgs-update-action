@@ -73,4 +73,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN}}
       run: ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
 
-    - run: git push origin "${{ steps.branch-name.outputs.sanitize-name }}"
+    - name: Push changes
+      shell: bash 
+      run: |
+        cd ${{ github.workspace }}/nixpkgs && \
+        git push origin "${{ steps.branch-name.outputs.sanitize-name }}"
