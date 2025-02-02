@@ -38,7 +38,9 @@ jobs:
             experimental-features = nix-command flakes
 
     - name: Build nixpkgs-update
-      run: nix build --accept-flake-config
+      run: |
+        cd ${{ github.workspace }}/nixpkgs-update && \
+        nix build --accept-flake-config
 
     - uses: actions/checkout@v4
       with:
