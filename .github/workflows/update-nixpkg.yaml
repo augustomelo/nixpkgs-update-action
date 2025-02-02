@@ -2,18 +2,26 @@ name: "Update nixpkg"
 on:
   workflow_dispatch:
     inputs:
-      pkg:
+      package:
         description: Nix package
         required: true
         type: string
-      currVer:
+      current-version:
         description: Current version
         required: true
         type: string
-      newVer:
+      new-version:
         description: New version
         required: true
         type: string
+      git-author-name:
+        description: "Author name used for commit. Only used if sign-commits is false."
+        required: false
+        default: "github-actions[bot]"
+      git-author-email:
+        description: "Author email used for commit. Only used if sign-commits is false."
+        required: false
+        default: "github-actions[bot]@users.noreply.github.com"
         
 jobs:
   update-nixpkgs:
@@ -22,10 +30,38 @@ jobs:
     - uses: actions/checkout@v4
       with:
         repository: nix-community/nixpkgs-update
+        path: nixpkgs-update
+
     - uses: cachix/install-nix-action@v30
       with:
           extra_nix_config: |
             experimental-features = nix-command flakes
-    - run: nix build --accept-flake-config
-    - name: "Create PR to update: \"${{ inputs.pkg }}: ${{ inputs.currVer }} -> ${{ inputs.newVer }}\""
-      run: ./result/bin/nixpkgs-update update --pr "${{ inputs.pkg }} ${{ inputs.currVer }} ${{ inputs.newVer }}"
+
+    - name: Build nixpkgs-update
+      run: nix build --accept-flake-config
+
+    - uses: actions/checkout@v4
+      with:
+        repository: ${{ github.repository_owner }}/nixpkgs
+        path: nixpkgs
+
+    - name: Clone fork, sync with upstream, create branch and switch to it
+      shell: bash
+      run: |
+        cd ${{ github.workspace }}/nixpkgs && \
+        git remote add upstream https://github.com/NixOS/nixpkgs.git && \
+        git fetch upstream && \
+        git merge upstream/master && \
+        git branch --set-upstream-to=upstream ""${${{inputs.package}}${{inputs.new-version}}//+([^[:alnum:]])/-}"" && \
+        git switch ""${${{inputs.package}}${{inputs.new-version}}//+([^[:alnum:]])/-}""
+
+    - name: Set author name and email
+      shell: bash
+      run: |
+        echo "GIT_AUTHOR_NAME=${{ inputs.git-author-name }}" >> $GITHUB_ENV
+        echo "GIT_AUTHOR_EMAIL=<${{ inputs.git-author-email }}>" >> $GITHUB_ENV
+
+    - name: "Create PR to update: \"${{ inputs.package }}: ${{ inputs.current-version }} -> ${{ inputs.new-version }}\""
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN}}
+      run: ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
