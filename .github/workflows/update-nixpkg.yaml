@@ -28,6 +28,4 @@ jobs:
             experimental-features = nix-command flakes
     - run: nix build --accept-flake-config
     - name: "Create PR to update: \"${{ inputs.pkg }}: ${{ inputs.currVer }} -> ${{ inputs.newVer }}\""
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: ./result/bin/nixpkgs-update update --pr "${{ inputs.pkg }} ${{ inputs.currVer }} ${{ inputs.newVer }}"
