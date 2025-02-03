@@ -60,12 +60,22 @@ jobs:
       run: |
         set -euo pipefail
         cd ${{ github.workspace }}/nixpkgs
+
         git remote add upstream https://github.com/NixOS/nixpkgs.git
         git fetch upstream
         git merge upstream/master
         git branch "${{ steps.branch-name.outputs.sanitize-name }}"
         git switch "${{ steps.branch-name.outputs.sanitize-name }}"
-        ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
         git config --global user.email "${{ inputs.git-author-email }}"
         git config --global user.name "${{ inputs.git-author-name }}"
-        git push origin "${{ steps.branch-name.outputs.sanitize-name }}"
+
+        ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
+
+        if ! git diff-index --quiet master; then
+          git push origin "${{ steps.branch-name.outputs.sanitize-name }}"
+          exit 0
+        fi
+
+        echo "No difference found, failing"
+        exit 1
+
