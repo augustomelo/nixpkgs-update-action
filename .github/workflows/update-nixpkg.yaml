@@ -58,8 +58,6 @@ jobs:
     - name: "Create PR to update: \"${{ inputs.package }}: ${{ inputs.current-version }} -> ${{ inputs.new-version }}\""
       shell: bash
       run: |
-        echo "GIT_AUTHOR_NAME=${{ inputs.git-author-name }}" >> $GITHUB_ENV
-        echo "GIT_AUTHOR_EMAIL=<${{ inputs.git-author-email }}>" >> $GITHUB_ENV
         set -euo pipefail
         cd ${{ github.workspace }}/nixpkgs
         git remote add upstream https://github.com/NixOS/nixpkgs.git
@@ -68,4 +66,6 @@ jobs:
         git branch "${{ steps.branch-name.outputs.sanitize-name }}"
         git switch "${{ steps.branch-name.outputs.sanitize-name }}"
         ${{ github.workspace }}/nixpkgs-update/result/bin/nixpkgs-update update --pr "${{ inputs.package }} ${{ inputs.current-version }} ${{ inputs.new-version }}"
+        git config --global user.email "${{ inputs.git-author-email }}"
+        git config --global user.name "${{ inputs.git-author-name }}"
         git push origin "${{ steps.branch-name.outputs.sanitize-name }}"
