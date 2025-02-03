@@ -55,15 +55,11 @@ jobs:
       run: |
          echo "sanitize-name=$( echo ${{inputs.package}}-${{inputs.new-version}} | tr " |.|/" "-")" >> $GITHUB_OUTPUT
 
-    - name: Set author name and email
+    - name: "Create PR to update: \"${{ inputs.package }}: ${{ inputs.current-version }} -> ${{ inputs.new-version }}\""
       shell: bash
       run: |
         echo "GIT_AUTHOR_NAME=${{ inputs.git-author-name }}" >> $GITHUB_ENV
         echo "GIT_AUTHOR_EMAIL=<${{ inputs.git-author-email }}>" >> $GITHUB_ENV
-
-    - name: "Create PR to update: \"${{ inputs.package }}: ${{ inputs.current-version }} -> ${{ inputs.new-version }}\""
-      shell: bash
-      run: |
         set -euo pipefail
         cd ${{ github.workspace }}/nixpkgs
         git remote add upstream https://github.com/NixOS/nixpkgs.git
